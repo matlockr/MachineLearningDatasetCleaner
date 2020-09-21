@@ -33,13 +33,6 @@ class Application(tk.Frame):
         self.entrySeperator = tk.Entry(self, bd=1, textvariable=self.entrySeperatorString)
         self.entrySeperator.pack()
         
-        # Get delete instance question
-        self.deleteBadInstances = tk.IntVar()
-        self.label2 = tk.Label(self, text="If there are any unknows or null values in the data, would you like to: \na: Leave unknowns and null values but use default values for all of them \nb: Delete any instance with a unknown or null value")
-        self.label2.pack()
-        self.checkBox = tk.Checkbutton(self, text = "Delete Bad Instances", variable=self.deleteBadInstances)
-        self.checkBox.pack()
-        
         self.startCleaning = tk.Button(self, text = "Start Cleaning Dataset", command=lambda: self.StartCleaning())
         self.startCleaning.pack()
         
@@ -49,7 +42,7 @@ class Application(tk.Frame):
         
         # Status Label
         self.statusLabel = tk.Label(self, text = "Status: ")
-        self.statusLabel.pack();
+        self.statusLabel.pack()
     
     def GetFile(self):
         self.fileName = askopenfilename()
@@ -61,7 +54,7 @@ class Application(tk.Frame):
             try:
                 if isinstance(self.fileName, str):
                     self.statusLabel["text"] = "Status: All conditions met and files should be in\n same directory as original file"
-                    DatasetCleanerMain.Run(self.fileName, self.entrySeperatorString.get(), self.deleteBadInstances.get(), self.isRegression.get())
+                    DatasetCleanerMain.Run(self.fileName, self.entrySeperatorString.get(), self.isRegression.get())
             except AttributeError:
                 self.statusLabel["text"] = "Status: ERROR: File not selected"
             except:

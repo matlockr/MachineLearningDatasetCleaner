@@ -20,7 +20,7 @@ def CleanDataToFloats(isString, data):
     
     # stringTypes used to place indecies into the clean data where the string
     # of non-clean data exist
-    stringTypes = ["Other"]
+    stringTypes = []
     
     # For if the non-clean data is string based
     if isString:
@@ -28,17 +28,17 @@ def CleanDataToFloats(isString, data):
             
             # Check if the element is null or non existant
             if isinstance(data[x], str):
-                if str(data[x]) in stringTypes:
-                    cleanData = np.append(cleanData, stringTypes.index(data[x]))
-                else:
+                if str(data[x]) not in stringTypes:
                     stringTypes.append(str(data[x]))
-                    cleanData = np.append(cleanData, stringTypes.index(data[x]))
+                
+                cleanData = np.append(cleanData, stringTypes.index(data[x]))
             else:
                 deleteInstances.append(x)
                 cleanData = np.append(cleanData, 0.00)
                 
     # For if the non-clean data is number based
     else:
+        stringTypes = ["Numeric"]
         for x in range(len(data)):
             # Check if the element is null or non existant
             if isDigit(data[x]):
@@ -48,8 +48,15 @@ def CleanDataToFloats(isString, data):
                 cleanData = np.append(cleanData, 0.00)
     
     return cleanData, deleteInstances, stringTypes
-                
-def Run(filename, seperator, keepInstances, isRegression):
+
+def InstancesToDeleteComparison(compareToList, newList):
+    if len(newList) > 0:
+            for i in range(len(newList)):
+                if newList[i] not in compareToList:
+                    compareToList.append(newList[i])
+    return compareToList
+
+def Run(filename, seperator, isRegression):
     
     # Get file from user
     userFile = open(filename, "r")
@@ -76,55 +83,43 @@ def Run(filename, seperator, keepInstances, isRegression):
     featureCount = int(featureCount / instanceCount)
     
     # With data now seperated we can make the numpy array and transpose it    
-    dataFull = np.asarray(instanceList).reshape(instanceCount* featureCount,).reshape(instanceCount, featureCount)
-    dataFullTranspose = dataFull.T
-    dataFullClean = np.array([])
+    dataFull = np.asarray(instanceList).reshape(instanceCount * featureCount).reshape(instanceCount, featureCount)
     
     # Get rid of all the '\n' in array
-    for x in range(instanceCount):
-        for y in range(featureCount):
-            dataFull[x][y] = dataFull[x][y].rstrip("\n")
+    for instance in range(instanceCount):
+        dataFull[instance][featureCount-1] = dataFull[instance][featureCount-1].rstrip("\n")
     
+    dataFullTranspose = dataFull.T
+    dataFullClean = np.array([])
+
     instancesToDelete = []
     stringTypesArray = []
     
     # Start cleaning process for each of the features
     if isRegression:
         for x in range(featureCount):
-            tmpFeatureString = "Feature " + str(x)
+            tmpFeatureString = "Feature " + str(x) + ": "
             stringTypesArray.append(tmpFeatureString)
-            if isDigit(dataFull[0][x]):
-                cleanFeature, deleteInstance, stringTypes = CleanDataToFloats(False, dataFullTranspose[x])
-                dataFullClean = np.append(dataFullClean, cleanFeature)
-                stringTypesArray.append("Non String")
-            else:
-                cleanFeature, deleteInstance, stringTypes = CleanDataToFloats(True, dataFullTranspose[x])
-                dataFullClean = np.append(dataFullClean, cleanFeature)   
-                stringTypesArray.append(stringTypes)
+
+            if isDigit(dataFull[0][x]): cleanFeature, deleteInstance, stringTypes = CleanDataToFloats(False, dataFullTranspose[x])
+            else: cleanFeature, deleteInstance, stringTypes = CleanDataToFloats(True, dataFullTranspose[x])
+            
+            dataFullClean = np.append(dataFullClean, cleanFeature)   
+            stringTypesArray.append(stringTypes)
         
-        # Append an instance number that needs to be deleted due to lack of information
-        if len(deleteInstance) > 0:
-            for i in range(len(deleteInstance)):
-                if deleteInstance[i] not in instancesToDelete:
-                    instancesToDelete.append(deleteInstance[i])
+        instancesToDelete = InstancesToDeleteComparison(instancesToDelete, deleteInstance)
     else:
         for x in range(featureCount-1):
-            tmpFeatureString = "Feature " + str(x)
+            tmpFeatureString = "Feature " + str(x) + ": "
             stringTypesArray.append(tmpFeatureString)
-            if isDigit(dataFull[0][x]):
-                cleanFeature, deleteInstance, stringTypes = CleanDataToFloats(False, dataFullTranspose[x])
-                dataFullClean = np.append(dataFullClean, cleanFeature)
-                stringTypesArray.append("Non String")
-            else:
-                cleanFeature, deleteInstance, stringTypes = CleanDataToFloats(True, dataFullTranspose[x])
-                dataFullClean = np.append(dataFullClean, cleanFeature)   
-                stringTypesArray.append(stringTypes)
+
+            if isDigit(dataFull[0][x]):cleanFeature, deleteInstance, stringTypes = CleanDataToFloats(False, dataFullTranspose[x])
+            else:cleanFeature, deleteInstance, stringTypes = CleanDataToFloats(True, dataFullTranspose[x])
+
+            dataFullClean = np.append(dataFullClean, cleanFeature)   
+            stringTypesArray.append(stringTypes)
             
-        # Append an instance number that needs to be deleted due to lack of information
-        if len(deleteInstance) > 0:
-            for i in range(len(deleteInstance)):
-                if deleteInstance[i] not in instancesToDelete:
-                    instancesToDelete.append(deleteInstance[i])
+        instancesToDelete = InstancesToDeleteComparison(instancesToDelete, deleteInstance)
                     
         # Do the cleaning for the target value
         targetInstanceDelete = []
@@ -141,24 +136,18 @@ def Run(filename, seperator, keepInstances, isRegression):
                         dataFullClean = np.append(dataFullClean, 999)
                         targetInstanceDelete.append(x)
         
-        # Append an instance number that needs to be deleted due to lack of information
-        if len(targetInstanceDelete) > 0:
-            for i in range(len(targetInstanceDelete)):
-                if targetInstanceDelete[i] not in instancesToDelete:
-                    instancesToDelete.append(targetInstanceDelete[i])
+        instancesToDelete = InstancesToDeleteComparison(instancesToDelete, targetInstanceDelete)
         
     # Reshape and set presicion on new array
     dataFullClean = dataFullClean.reshape(featureCount, instanceCount).T
     np.set_printoptions(suppress=True)
 
-
-    # Delete instances of bad data if user requested it
-    if keepInstances == False or isRegression == False:
-        for i in range(len(instancesToDelete)):
-            dataFullClean = np.delete(dataFullClean, instancesToDelete[i], 0)
-            instanceCount -= 1
-            for j in range(len(instancesToDelete)):
-                instancesToDelete[j] -= 1    
+    # Delete instances of bad or missing data
+    for i in range(len(instancesToDelete)):
+        dataFullClean = np.delete(dataFullClean, instancesToDelete[i], 0)
+        instanceCount -= 1
+        for j in range(len(instancesToDelete)):
+            instancesToDelete[j] -= 1    
                  
     # Make new file for clean data
     tmpFileName, file_exe = os.path.splitext(filename)
