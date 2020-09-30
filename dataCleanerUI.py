@@ -57,6 +57,8 @@ class Application(tk.Frame):
                     DatasetCleanerMain.Run(self.fileName, self.entrySeperatorString.get(), self.isRegression.get())
             except AttributeError:
                 self.statusLabel["text"] = "Status: ERROR: File not selected"
+            except FileNotFoundError:
+                self.statusLabel["text"] = "Status: ERROR: File not found"
             except:
                 print(sys.exc_info())
                 self.statusLabel["text"] = "Status: ERROR: Unknown error occured"
