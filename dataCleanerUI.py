@@ -19,30 +19,30 @@ class Application(tk.Frame):
         
         # Get file button
         self.getFile = tk.Button(self, text="Load File", command=lambda: self.GetFile())
-        self.getFile.pack(side="top")
+        self.getFile.grid(row=0, column=0, ipadx=35, ipady=10)
         
         # Is the data for Regression Checkbox
         self.isRegression = tk.IntVar()
         self.labelIsRegression = tk.Checkbutton(self, text = "Clean for Regression", variable=self.isRegression)
-        self.labelIsRegression.pack()
+        self.labelIsRegression.grid(row=1, column=0, ipadx=5, ipady=5)
         
         # Get seperator
         self.entrySeperatorString = tk.StringVar()
         self.label1 = tk.Label(self, text="Seperator character:")
-        self.label1.pack()
+        self.label1.grid(row=2, column=0)
         self.entrySeperator = tk.Entry(self, bd=1, textvariable=self.entrySeperatorString)
-        self.entrySeperator.pack()
+        self.entrySeperator.grid(row=3, column=0)
         
         self.startCleaning = tk.Button(self, text = "Start Cleaning Dataset", command=lambda: self.StartCleaning())
-        self.startCleaning.pack()
+        self.startCleaning.grid(row=1, column=1, ipadx=10, ipady=30, rowspan=3)
         
-        # Quit button
+        # Quit buttonx
         self.quit = tk.Button(self, text="QUIT", fg="red", command=self.master.destroy)
-        self.quit.pack(side="bottom")
+        self.quit.grid(row=0, column=1, ipadx=55, ipady=10)
         
         # Status Label
         self.statusLabel = tk.Label(self, text = "Status: ")
-        self.statusLabel.pack()
+        self.statusLabel.grid(row=4, column=0, padx=5, pady=10, columnspan=2)
     
     def GetFile(self):
         self.fileName = askopenfilename()
@@ -63,6 +63,6 @@ class Application(tk.Frame):
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("500x500")
+    #root.geometry("500x500")
     app = Application(master=root)
     app.mainloop()
