@@ -1,9 +1,10 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 import DatasetCleanerMain
 import sys
 
-class Application(tk.Frame):
+class CleanApp(tk.Frame):
     
     # Variables
     filename = None
@@ -15,7 +16,6 @@ class Application(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        self.winfo_toplevel().title("Dataset Cleaner")
         
         # Get file button
         self.getFile = tk.Button(self, text="Load File", command=lambda: self.GetFile())
@@ -34,14 +34,10 @@ class Application(tk.Frame):
         self.entrySeperator.grid(row=3, column=0)
         
         self.startCleaning = tk.Button(self, text = "Start Cleaning Dataset", command=lambda: self.StartCleaning())
-        self.startCleaning.grid(row=1, column=1, ipadx=10, ipady=30, rowspan=3)
-        
-        # Quit buttonx
-        self.quit = tk.Button(self, text="QUIT", fg="red", command=self.master.destroy)
-        self.quit.grid(row=0, column=1, ipadx=55, ipady=10)
+        self.startCleaning.grid(row=0, column=1, ipadx=10, ipady=55, rowspan=4)
         
         # Status Label
-        self.statusLabel = tk.Label(self, text = "Status: ")
+        self.statusLabel = tk.Label(self, text = "Status: Waiting")
         self.statusLabel.grid(row=4, column=0, padx=5, pady=10, columnspan=2)
     
     def GetFile(self):
@@ -63,8 +59,80 @@ class Application(tk.Frame):
                 print(sys.exc_info())
                 self.statusLabel["text"] = "Status: ERROR: Unknown error occured"
 
+class ViewApp(tk.Frame):
+    
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.pack()
+        self.create_widgets()
+
+    def create_widgets(self):
+        
+        # Get file button
+        self.getFile = tk.Button(self, text="Load File", command=lambda: self.GetFile())
+        self.getFile.pack(ipadx=35, ipady=10)
+        
+        self.scrollbar = tk.Scrollbar(self)
+        self.scrollbar.pack(expand=True, side = tk.RIGHT, fill = tk.Y)
+        
+        self.mylist = tk.Listbox(self, yscrollcommand = self.scrollbar.set)
+        
+        self.mylist.pack( side = tk.LEFT, fill = tk.BOTH )
+        self.scrollbar.config( command = self.mylist.yview )
+    
+    
+    def GetFile(self):
+        self.fileName = askopenfilename()
+        
+        self.mylist.delete(0, self.mylist.size())
+        
+        # Get file from user
+        self.userFile = open(self.fileName, "r")
+        
+        self.characterCount = 0
+        
+        for instance in self.userFile:
+            if len(instance) > self.characterCount:
+                self.characterCount = len(instance)
+            self.mylist.insert(tk.END, instance)
+        
+        self.mylist["width"] = self.characterCount
+        self.mylist["heigh"] = self.mylist.size()
+        
+        self.userFile.close()
+
+class LearnApp(tk.Frame):
+    
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.pack()
+        self.create_widgets()
+
+    def create_widgets(self):
+        pass
+
+
 if __name__ == "__main__":
+    
+    # Setup window
     root = tk.Tk()
-    #root.geometry("500x500")
-    app = Application(master=root)
-    app.mainloop()
+    tabControl = ttk.Notebook(root)
+    
+    tab1 = ttk.Frame(tabControl)
+    tab2 = ttk.Frame(tabControl)
+    tab3 = ttk.Frame(tabControl)
+    
+    tabControl.add(tab1, text='Clean')
+    tabControl.add(tab2, text='View')
+    tabControl.add(tab3, text='Learn')
+    tabControl.pack(expand=1, fill="both")
+    
+    cleanApp = CleanApp(master=tab1)
+    viewApp = ViewApp(master=tab2)
+    learnApp = LearnApp(master=tab3)
+    
+    root.winfo_toplevel().title("Dataset Cleaner")
+    
+    root.mainloop()
