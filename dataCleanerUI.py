@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 import DatasetCleanerMain
+import LearnML
 import sys
 
 class CleanApp(tk.Frame):
@@ -83,26 +84,65 @@ class ViewApp(tk.Frame):
     
     
     def GetFile(self):
-        self.fileName = askopenfilename()
+        fileName = askopenfilename()
         
         self.mylist.delete(0, self.mylist.size())
         
         # Get file from user
-        self.userFile = open(self.fileName, "r")
+        userFile = open(fileName, "r")
         
-        self.characterCount = 0
+        characterCount = 0
         
-        for instance in self.userFile:
-            if len(instance) > self.characterCount:
-                self.characterCount = len(instance)
+        for instance in userFile:
+            if len(instance) > characterCount:
+                characterCount = len(instance)
             self.mylist.insert(tk.END, instance)
         
-        self.mylist["width"] = self.characterCount
+        self.mylist["width"] = characterCount
         self.mylist["heigh"] = self.mylist.size()
         
-        self.userFile.close()
+        userFile.close()
 
 class LearnApp(tk.Frame):
+    
+    # Variables
+    filename = None
+    
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.pack()
+        self.create_widgets()
+
+    def create_widgets(self):
+        # Get file button
+        self.getFile = tk.Button(self, text="Load File", command=lambda: self.GetFile())
+        self.getFile.grid(row=0, column=0, ipadx=40, ipady=10)
+        
+        self.startCleaning = tk.Button(self, text = "Start Learning from Dataset", command=lambda: self.StartLearning())
+        self.startCleaning.grid(row=0, column=1, ipadx=10, ipady=10, rowspan=1)
+        
+        # Status Label
+        self.statusLabel = tk.Label(self, text = "Status: Waiting")
+        self.statusLabel.grid(row=1, column=0, padx=5, pady=10, columnspan=2)
+    
+    def GetFile(self):
+        self.fileName = askopenfilename()
+    
+    def StartLearning(self):
+        try:
+            if isinstance(self.fileName, str):
+                self.statusLabel["text"] = "Status: All conditions met and files should be in\n same directory as original file"
+                LearnML.Run(self.fileName)
+        except AttributeError:
+            self.statusLabel["text"] = "Status: ERROR: File not selected"
+        except FileNotFoundError:
+            self.statusLabel["text"] = "Status: ERROR: File not found"
+        except:
+            print(sys.exc_info())
+            self.statusLabel["text"] = "Status: ERROR: Unknown error occured"
+
+class PredictApp(tk.Frame):
     
     def __init__(self, master=None):
         super().__init__(master)
@@ -120,19 +160,22 @@ if __name__ == "__main__":
     root = tk.Tk()
     tabControl = ttk.Notebook(root)
     
-    tab1 = ttk.Frame(tabControl)
-    tab2 = ttk.Frame(tabControl)
-    tab3 = ttk.Frame(tabControl)
+    cleanTab = ttk.Frame(tabControl)
+    dataViewTab = ttk.Frame(tabControl)
+    learnTab = ttk.Frame(tabControl)
+    predictTab = ttk.Frame(tabControl)
     
-    tabControl.add(tab1, text='Clean')
-    tabControl.add(tab2, text='View')
-    tabControl.add(tab3, text='Learn')
+    tabControl.add(cleanTab, text='Clean Dataset')
+    tabControl.add(dataViewTab, text='View Dataset')
+    tabControl.add(learnTab, text='Learn')
+    tabControl.add(predictTab, text="Predict")
     tabControl.pack(expand=1, fill="both")
     
-    cleanApp = CleanApp(master=tab1)
-    viewApp = ViewApp(master=tab2)
-    learnApp = LearnApp(master=tab3)
+    cleanApp = CleanApp(master=cleanTab)
+    viewApp = ViewApp(master=dataViewTab)
+    learnApp = LearnApp(master=learnTab)
+    predictApp = PredictApp(master=predictTab)
     
-    root.winfo_toplevel().title("Dataset Cleaner")
+    root.winfo_toplevel().title("Machine Leanring Tool")
     
     root.mainloop()
