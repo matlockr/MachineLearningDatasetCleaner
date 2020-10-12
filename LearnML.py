@@ -2,6 +2,7 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 import numpy as np
 
 def Run(datasetFile):
+    
     # Get file from user
     userFile = open(datasetFile, "r")
     
@@ -31,7 +32,21 @@ def Run(datasetFile):
     
     # Get rid of all the '\n' in array
     for instance in range(instanceCount):
-        dataFull[instance][featureCount-1] = dataFull[instance][featureCount-1].rstrip("\n").T
+        dataFull[instance][featureCount-1] = dataFull[instance][featureCount-1].rstrip("\n")
     
-    #features = np.array(dataFull[])
-    print(dataFull)
+    features = np.array(dataFull.T[0:featureCount-1]).astype(float).reshape(featureCount-1, instanceCount)
+    target = np.array(dataFull.T[featureCount-1]).astype(float)
+    
+    # Setup Machine Learning
+    isClassification = False
+    for i in range(len(target)):
+        if int(target[i]) == 0 or int(target[i]) == 1:
+            isClassification = True
+        else:
+            isClassification = False
+            break
+            
+    if isClassification:
+        regModel = LogisticRegression().fit(features.T, target)
+    else:
+        clsModel = LinearRegression().fit(features.T, target)        

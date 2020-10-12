@@ -106,7 +106,7 @@ class ViewApp(tk.Frame):
 class LearnApp(tk.Frame):
     
     # Variables
-    filename = None
+    learnFile = None
     
     def __init__(self, master=None):
         super().__init__(master)
@@ -119,23 +119,23 @@ class LearnApp(tk.Frame):
         self.getFile = tk.Button(self, text="Load File", command=lambda: self.GetFile())
         self.getFile.grid(row=0, column=0, ipadx=40, ipady=10)
         
-        self.startCleaning = tk.Button(self, text = "Start Learning from Dataset", command=lambda: self.StartLearning())
-        self.startCleaning.grid(row=0, column=1, ipadx=10, ipady=10, rowspan=1)
+        self.startLearning = tk.Button(self, text = "Start Learning from Dataset", command=lambda: self.StartLearning())
+        self.startLearning.grid(row=0, column=1, ipadx=10, ipady=10, rowspan=1)
         
         # Status Label
         self.statusLabel = tk.Label(self, text = "Status: Waiting")
         self.statusLabel.grid(row=1, column=0, padx=5, pady=10, columnspan=2)
     
     def GetFile(self):
-        self.fileName = askopenfilename()
+        self.learnFile = askopenfilename()
     
     def StartLearning(self):
         try:
-            if isinstance(self.fileName, str):
+            if isinstance(self.learnFile, str):
                 self.statusLabel["text"] = "Status: All conditions met and files should be in\n same directory as original file"
-                LearnML.Run(self.fileName)
-        except AttributeError:
-            self.statusLabel["text"] = "Status: ERROR: File not selected"
+                LearnML.Run(self.learnFile)
+        #except AttributeError:
+            #self.statusLabel["text"] = "Status: ERROR: File not selected"
         except FileNotFoundError:
             self.statusLabel["text"] = "Status: ERROR: File not found"
         except:
