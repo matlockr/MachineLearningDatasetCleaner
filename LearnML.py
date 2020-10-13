@@ -1,5 +1,7 @@
 from sklearn.linear_model import LinearRegression, LogisticRegression
 import numpy as np
+import pickle
+import os
 
 def Run(datasetFile):
     
@@ -34,7 +36,7 @@ def Run(datasetFile):
     for instance in range(instanceCount):
         dataFull[instance][featureCount-1] = dataFull[instance][featureCount-1].rstrip("\n")
     
-    features = np.array(dataFull.T[0:featureCount-1]).astype(float).reshape(featureCount-1, instanceCount)
+    features = np.array(dataFull.T[0:featureCount-1]).astype(float).reshape(featureCount-1, instanceCount).T
     target = np.array(dataFull.T[featureCount-1]).astype(float)
     
     # Setup Machine Learning
@@ -45,8 +47,21 @@ def Run(datasetFile):
         else:
             isClassification = False
             break
-            
+        
+    mlModel = None
+    
     if isClassification:
-        regModel = LogisticRegression().fit(features.T, target)
+        mlModel = LogisticRegression().fit(features, target)
     else:
-        clsModel = LinearRegression().fit(features.T, target)        
+        mlModel = LinearRegression().fit(features, target) 
+
+    
+    # Make new file for Model data
+    tmpFileName, file_exe = os.path.splitext(datasetFile)
+    newFilePath = tmpFileName + "MODEL" + ".sav"
+    pickle.dump(mlModel, open(newFilePath, 'wb'))
+     
+    # load the model from disk
+    # loaded_model = pickle.load(open(filename, 'rb'))
+    # result = loaded_model.score(features, target)
+    # print(result)

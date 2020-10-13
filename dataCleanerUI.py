@@ -134,8 +134,8 @@ class LearnApp(tk.Frame):
             if isinstance(self.learnFile, str):
                 self.statusLabel["text"] = "Status: All conditions met and files should be in\n same directory as original file"
                 LearnML.Run(self.learnFile)
-        #except AttributeError:
-            #self.statusLabel["text"] = "Status: ERROR: File not selected"
+        except AttributeError:
+            self.statusLabel["text"] = "Status: ERROR: File not selected"
         except FileNotFoundError:
             self.statusLabel["text"] = "Status: ERROR: File not found"
         except:
@@ -144,6 +144,9 @@ class LearnApp(tk.Frame):
 
 class PredictApp(tk.Frame):
     
+    # Variables
+    modelFile = None
+    
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
@@ -151,8 +154,33 @@ class PredictApp(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        pass
+        # Get file button
+        self.getFile = tk.Button(self, text="Load Model File", command=lambda: self.GetFile())
+        self.getFile.grid(row=0, column=0, ipadx=30, ipady=10)
+        
+        self.startPredicting = tk.Button(self, text = "Predict Target from Model", command=lambda: self.StartPredicting())
+        self.startPredicting.grid(row=0, column=1, ipadx=10, ipady=10, rowspan=1)
+        
+        # Status Label
+        self.statusLabel = tk.Label(self, text = "Status: Waiting")
+        self.statusLabel.grid(row=1, column=0, padx=5, pady=10, columnspan=2)
 
+    def GetFile(self):
+        self.modelFile = askopenfilename()
+        
+    def StartPredicting(self):
+        try:
+            if isinstance(self.modelFile, str):
+                self.statusLabel["text"] = "Status: All conditions met and files should be in\n same directory as original file"
+                print("DONE FOR NOW")
+                
+        except AttributeError:
+            self.statusLabel["text"] = "Status: ERROR: File not selected"
+        except FileNotFoundError:
+            self.statusLabel["text"] = "Status: ERROR: File not found"
+        except:
+            print(sys.exc_info())
+            self.statusLabel["text"] = "Status: ERROR: Unknown error occured"
 
 if __name__ == "__main__":
     
