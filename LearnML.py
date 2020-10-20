@@ -60,8 +60,3 @@ def Run(datasetFile):
     tmpFileName, file_exe = os.path.splitext(datasetFile)
     newFilePath = tmpFileName + "MODEL" + ".sav"
     pickle.dump(mlModel, open(newFilePath, 'wb'))
-     
-    # load the model from disk
-    # loaded_model = pickle.load(open(filename, 'rb'))
-    # result = loaded_model.score(features, target)
-    # print(result)

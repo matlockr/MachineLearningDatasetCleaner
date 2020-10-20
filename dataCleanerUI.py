@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 import DatasetCleanerMain
 import LearnML
+import PredictML
 import sys
 
 class CleanApp(tk.Frame):
@@ -161,26 +162,35 @@ class PredictApp(tk.Frame):
         self.startPredicting = tk.Button(self, text = "Predict Target from Model", command=lambda: self.StartPredicting())
         self.startPredicting.grid(row=0, column=1, ipadx=10, ipady=10, rowspan=1)
         
+        # Get seperator
+        self.entryFeatureString = tk.StringVar()
+        self.label1 = tk.Label(self, text="Features(Comma Seperated):")
+        self.label1.grid(row=1, column=0)
+        self.entrySeperator = tk.Entry(self, bd=1, textvariable=self.entryFeatureString)
+        self.entrySeperator.grid(row=1, column=1)
+        
         # Status Label
         self.statusLabel = tk.Label(self, text = "Status: Waiting")
-        self.statusLabel.grid(row=1, column=0, padx=5, pady=10, columnspan=2)
+        self.statusLabel.grid(row=2, column=0, padx=5, pady=10, columnspan=2)
 
     def GetFile(self):
         self.modelFile = askopenfilename()
         
     def StartPredicting(self):
-        try:
-            if isinstance(self.modelFile, str):
-                self.statusLabel["text"] = "Status: All conditions met and files should be in\n same directory as original file"
-                print("DONE FOR NOW")
-                
-        except AttributeError:
-            self.statusLabel["text"] = "Status: ERROR: File not selected"
-        except FileNotFoundError:
-            self.statusLabel["text"] = "Status: ERROR: File not found"
-        except:
-            print(sys.exc_info())
-            self.statusLabel["text"] = "Status: ERROR: Unknown error occured"
+        if len(self.entryFeatureString.get()) < 1:
+            self.statusLabel["text"] = "Status: ERROR: Entry Seperator must be atleast 1 character."
+        else:
+            try:
+                if isinstance(self.modelFile, str):
+                    self.statusLabel["text"] = PredictML.Run(self.modelFile, self.entryFeatureString.get())
+                    
+            except AttributeError:
+                self.statusLabel["text"] = "Status: ERROR: File not selected"
+            except FileNotFoundError:
+                self.statusLabel["text"] = "Status: ERROR: File not found"
+            except:
+                print(sys.exc_info())
+                self.statusLabel["text"] = "Status: ERROR: Unknown error occured"
 
 if __name__ == "__main__":
     
